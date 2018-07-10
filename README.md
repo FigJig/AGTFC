@@ -1,6 +1,6 @@
-# Project Bluebook
-MIDI controller game
+# A Guide To First Contact
 
+HOW TO USE GITHUB
 Download GitHub Desktop, make a profile.
 
 Instructions:
