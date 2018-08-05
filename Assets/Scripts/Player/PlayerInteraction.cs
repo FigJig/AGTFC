@@ -28,8 +28,21 @@ public class PlayerInteraction : MonoBehaviour {
                 if (hit.transform.gameObject.tag == "NPC")
                 {
                     if (NPC != null)
+                    {
+                        GameObject _prevNPC = NPC;
+
                         NPC.gameObject.GetComponent<NPC>().RemoveOutline();
 
+                        NPC = hit.transform.gameObject;
+
+                        if (_prevNPC == NPC)
+                        {
+                            NPC.gameObject.GetComponent<NPC>().RemoveOutline();
+                            NPC = null;
+                            return;
+                        }
+                    }
+        
                     NPC = hit.transform.gameObject;
                     NPC.gameObject.GetComponent<NPC>().Interaction();
                 }
@@ -38,7 +51,20 @@ public class PlayerInteraction : MonoBehaviour {
                 if (hit.transform.gameObject.tag == "Object")
                 {
                     if (Object != null)
+                    {
+                        GameObject _prevObject = Object;
+
                         Object.gameObject.GetComponent<InteractableObject>().RemoveOutline();
+
+                        Object = hit.transform.gameObject;
+
+                        if(_prevObject == Object)
+                        {
+                            Object.gameObject.GetComponent<InteractableObject>().RemoveOutline();
+                            Object = null;
+                            return;
+                        }
+                    }
 
                     Object = hit.transform.gameObject;
                     Object.gameObject.GetComponent<InteractableObject>().AddOutline();
