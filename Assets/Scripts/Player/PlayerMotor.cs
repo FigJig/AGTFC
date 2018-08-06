@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMotor : MonoBehaviour {
 
+    public GameObject ARMenu;
+
     [SerializeField]
     private Camera cam;
     private Rigidbody rb;
@@ -21,8 +23,11 @@ public class PlayerMotor : MonoBehaviour {
 	}
 	
 	void FixedUpdate () {
-        PerformMovement();
-        PerformRotation();
+        if (!ARMenu.activeSelf)
+        {
+            PerformMovement();
+            PerformRotation();
+        }
     }
 
     public void Move(Vector3 _velocity)

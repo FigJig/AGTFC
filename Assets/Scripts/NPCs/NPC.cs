@@ -1,16 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public abstract class NPC : MonoBehaviour {
 
     public Renderer rend { get; private set; }
-    public bool HasBeenInteracted;
+    public TextMeshPro dialogue;
 
     void Start()
     {
         rend = GetComponent<Renderer>();
-        HasBeenInteracted = false;
     }
 
     public void AddOutline()

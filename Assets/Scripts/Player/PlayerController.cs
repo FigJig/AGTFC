@@ -23,11 +23,9 @@ public class PlayerController : MonoBehaviour {
 
     void Start () {
         motor = GetComponent<PlayerMotor>();
-	}
+    }
 	
 	void Update () {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
 
         //Movement
         float _xMovement = Input.GetAxisRaw("Horizontal");
