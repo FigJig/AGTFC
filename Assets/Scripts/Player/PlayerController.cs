@@ -6,15 +6,15 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
     [Header("Movement Settings")]
-    [SerializeField]
-    private float speed = 5f;
-    [SerializeField]
-    private float lookSmoothing;
-    [SerializeField]
-    private float lookSensitivity;
+    public float speed;
+    public float sprintSpeed;
+    public float lookSmoothing;
+    public float lookSensitivity;
+    public float jumpHeight;
+
     private float smoothYRot;
     private float smoothXRot;
-
+    
     [SerializeField]
     private float distanceToGround;
     private PlayerMotor motor;
@@ -35,8 +35,13 @@ public class PlayerController : MonoBehaviour {
         Vector3 _movementVertical = transform.forward * _zMovement;
 
         Vector3 _velocity = (_movementHorizontal + _movementVertical).normalized * speed;
+        Vector3 _sprintVelocity = (_movementHorizontal + _movementVertical).normalized * sprintSpeed;
 
         motor.Move(_velocity);
+        motor.Sprinting(_sprintVelocity);
+
+        //Jumping
+        motor.Jump(jumpHeight);
 
         //Rotation of character
         float _yRot = Input.GetAxisRaw("Mouse X");

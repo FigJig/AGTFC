@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AGTFC_Prototype", "Assembly-CSharp.csproj", "{AB1DB3BF-6D4A-483E-0C99-D6C5E5F9F41C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{AB1DB3BF-6D4A-483E-0C99-D6C5E5F9F41C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AGTFC_Prototype", "Assembly-CSharp-Editor.csproj", "{32F436F1-33F6-3517-7EBC-CA9BF64B7912}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{32F436F1-33F6-3517-7EBC-CA9BF64B7912}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

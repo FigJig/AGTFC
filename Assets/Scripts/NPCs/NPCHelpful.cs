@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NPCHelpful : NPC {
 
-    public GameObject ObjectToTranslate;
+    public string textToDisplay;
 
     public override void Interaction()
     {
@@ -14,7 +14,7 @@ public class NPCHelpful : NPC {
 
     public override void Translate()
     {
-        dialogue.text = ObjectToTranslate.gameObject.GetComponent<InteractableObject>().ObjectName;
+        dialogue.text = textToDisplay;
         RemoveOutline();
     } 
 }
