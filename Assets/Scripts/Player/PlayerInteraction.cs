@@ -6,8 +6,10 @@ using UnityEngine.UI;
 
 public class PlayerInteraction : MonoBehaviour {
 
-    public GameObject NPC { get; private set; }
-    public GameObject Object { get; private set; }
+    public NPC curNPC { get; private set; }
+    public InteractableObject interactableObject { get; private set; }
+
+    public GrabbableObject curGrabbedObj;
 
     [SerializeField]
     private GameObject arMenu;
@@ -21,15 +23,11 @@ public class PlayerInteraction : MonoBehaviour {
 
     void Start()
     {
-        NPC = null;
-        Object = null;
         languageDictionary = new LanguageDictionary();
         languageDictionary.Initialize();
     }
 	
 	void Update () {
-
-        ARMenuFunctions();
 
         RaycastHit hit;
 
@@ -40,98 +38,91 @@ public class PlayerInteraction : MonoBehaviour {
                 //Gets the NPC the player clicks on to help translate for them
                 if (hit.transform.gameObject.tag == "NPC")
                 {
-                    if (NPC != null)
+                    if (curNPC != null)
                     {
-                        GameObject _prevNPC = NPC;
+                        NPC _prevNPC = curNPC;
 
-                        NPC.gameObject.GetComponent<NPC>().RemoveOutline();
+                        curNPC.RemoveOutline();
 
-                        NPC = hit.transform.gameObject;
+                        curNPC = hit.transform.GetComponent<NPC>();
 
-                        if (_prevNPC == NPC)
+                        if (_prevNPC == curNPC)
                         {
-                            NPC.gameObject.GetComponent<NPC>().RemoveOutline();
-                            NPC = null;
+                            curNPC.RemoveOutline();
+                            curNPC = null;
                             return;
                         }
                     }
-        
-                    NPC = hit.transform.gameObject;
-                    NPC.gameObject.GetComponent<NPC>().Interaction();
+
+                    curNPC = hit.transform.GetComponent<NPC>();
+                    curNPC.Interaction();
                 }
 
                 //If it's an object they've clicked, this is the object they want translated
                 if (hit.transform.gameObject.tag == "Object")
                 {
-                    if (Object != null)
+                    if (interactableObject != null)
                     {
-                        GameObject _prevObject = Object;
+                        InteractableObject _prevObject = interactableObject;
 
-                        Object.gameObject.GetComponent<InteractableObject>().RemoveOutline();
+                        interactableObject.RemoveOutline();
 
-                        Object = hit.transform.gameObject;
+                        interactableObject = hit.transform.GetComponent<InteractableObject>();
 
-                        if(_prevObject == Object)
+                        if(_prevObject == interactableObject)
                         {
-                            Object.gameObject.GetComponent<InteractableObject>().RemoveOutline();
-                            Object = null;
+                            interactableObject.RemoveOutline();
+                            interactableObject = null;
                             return;
                         }
                     }
 
-                    Object = hit.transform.gameObject;
-                    Object.gameObject.GetComponent<InteractableObject>().AddOutline();
-                }               
+                    interactableObject = hit.transform.GetComponent<InteractableObject>();
+                    interactableObject.AddOutline();
+                }
+
+                if (hit.transform.gameObject.tag == "Grabbable")
+                {
+                    if (curGrabbedObj != null)
+                    {
+                        curGrabbedObj = null;
+                        return;
+                    }
+
+                    curGrabbedObj = hit.transform.GetComponent<GrabbableObject>();
+                    curGrabbedObj.grabbed = true;
+                }
+            }
+        }
+
+        //If the player is holding an object, drop it
+        if (Input.GetButtonDown("Fire2") && !arMenu.activeSelf)
+        {
+            if (curGrabbedObj != null)
+            {
+                curGrabbedObj.grabbed = false;
             }
         }
 
         //When an NPC and Object has been clicked on, the NPC will translate if they're a helpful NPC
-        if (Input.GetKeyDown(KeyCode.Space) && NPC != null && Object != null)
-        {
-            if (NPC.gameObject.GetComponent<NPCHelpful>())
+        if (Input.GetKeyDown(KeyCode.E) && curNPC != null && interactableObject != null)
+        {     
+            if (curNPC.GetComponent<NPCHelpful>())
             {
-                NPC.gameObject.GetComponent<NPCHelpful>().ObjectToTranslate = Object;
-
-                string _objectEnglishWord;
-                if (languageDictionary.AlienEnglishDictionary.TryGetValue(Object.gameObject.GetComponent<InteractableObject>().ObjectName, out _objectEnglishWord))
-                    AddToGuide(Object.gameObject.GetComponent<InteractableObject>().ObjectName, _objectEnglishWord);
+                string _objectAlienWord;
+                if (languageDictionary.AlienEnglishDictionary.TryGetValue(interactableObject.ObjectName, out _objectAlienWord))
+                    AddToGuide(_objectAlienWord, interactableObject.ObjectName);
                 else
-                    throw new Exception("Alien object name is wrong; not found in the LanguageDictionary."); //Used to catch any errors with inputting wrong names in the dictionary or ObjectName
+                    throw new Exception("English object name is wrong; not found in the LanguageDictionary."); //Used to catch any errors with inputting wrong names in the dictionary or ObjectName
+
+                curNPC.GetComponent<NPCHelpful>().textToDisplay = _objectAlienWord;
             }
 
-            NPC.gameObject.GetComponent<NPC>().Translate();
-            Object.gameObject.GetComponent<InteractableObject>().Translated();
-            NPC = null;
-            Object = null;
+            curNPC.Translate();
+            interactableObject.Translated();
+            curNPC = null;
+            interactableObject = null;
         }
-    }
-
-    void ARMenuFunctions()
-    {
-        if (!arMenu.activeSelf)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            switch(arMenu.activeSelf)
-            {
-                case true:
-                    arMenu.SetActive(false);
-                    break;
-                case false:
-                    arMenu.SetActive(true);
-                    break;
-            }
-        }
-
     }
 
     //Adds new translated word to AR guide dictionary

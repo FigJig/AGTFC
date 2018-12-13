@@ -6,11 +6,13 @@ using TMPro;
 public abstract class NPC : MonoBehaviour {
 
     public Renderer rend { get; private set; }
+    [HideInInspector]
     public TextMeshPro dialogue;
 
-    void Start()
+    void Awake()
     {
         rend = GetComponent<Renderer>();
+        dialogue = transform.GetChild(1).GetComponent<TextMeshPro>();
     }
 
     public void AddOutline()
