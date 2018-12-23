@@ -8,7 +8,6 @@ public class PlayerInteraction : MonoBehaviour {
 
     public NPC curNPC { get; private set; }
     public InteractableObject interactableObject { get; private set; }
-
     public GrabbableObject curGrabbedObj;
 
     [SerializeField]
@@ -19,101 +18,103 @@ public class PlayerInteraction : MonoBehaviour {
     private GameObject arMenuDictRowPrefab;
     [SerializeField]
     private LayerMask interactableLayer;
-    private LanguageDictionary languageDictionary;
 
-    void Start()
+    private AlienEnglishDictionaryManager alienEnglishDictionaryManager;
+
+    void Awake()
     {
-        languageDictionary = new LanguageDictionary();
-        languageDictionary.Initialize();
+        alienEnglishDictionaryManager = GameObject.Find("AlienEnglishDictionary").GetComponent<AlienEnglishDictionaryManager>();
     }
-	
-	void Update () {
+
+    void Update () {
 
         RaycastHit hit;
 
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, 100f, interactableLayer))
         {
-            if (Input.GetButtonDown("Fire1") && !arMenu.activeSelf)
+            if (Input.GetButtonDown("Fire1") && !arMenu.activeSelf && curGrabbedObj == null)
             {
-                //Gets the NPC the player clicks on to help translate for them
-                if (hit.transform.gameObject.tag == "NPC")
-                {
-                    if (curNPC != null)
+                    //Gets the NPC the player clicks on to help translate for them
+                    if (hit.transform.gameObject.tag == "NPC")
                     {
-                        NPC _prevNPC = curNPC;
+                        if (curNPC != null)
+                        {
+                            NPC _prevNPC = curNPC;
 
-                        curNPC.RemoveOutline();
+                            curNPC.RemoveOutline();
+
+                            curNPC = hit.transform.GetComponent<NPC>();
+
+                            if (_prevNPC == curNPC)
+                            {
+                                curNPC.RemoveOutline();
+                                curNPC = null;
+                                return;
+                            }
+                        }
 
                         curNPC = hit.transform.GetComponent<NPC>();
-
-                        if (_prevNPC == curNPC)
-                        {
-                            curNPC.RemoveOutline();
-                            curNPC = null;
-                            return;
-                        }
+                        curNPC.Interaction();
                     }
 
-                    curNPC = hit.transform.GetComponent<NPC>();
-                    curNPC.Interaction();
-                }
-
-                //If it's an object they've clicked, this is the object they want translated
-                if (hit.transform.gameObject.tag == "Object")
-                {
-                    if (interactableObject != null)
+                    //If it's an object they've clicked, this is the object they want translated
+                    if (hit.transform.gameObject.tag == "Object")
                     {
-                        InteractableObject _prevObject = interactableObject;
+                        if (interactableObject != null)
+                        {
+                            InteractableObject _prevObject = interactableObject;
 
-                        interactableObject.RemoveOutline();
+                            interactableObject.RemoveOutline();
+
+                            interactableObject = hit.transform.GetComponent<InteractableObject>();
+
+                            if (_prevObject == interactableObject)
+                            {
+                                interactableObject.RemoveOutline();
+                                interactableObject = null;
+                                return;
+                            }
+                        }
 
                         interactableObject = hit.transform.GetComponent<InteractableObject>();
-
-                        if(_prevObject == interactableObject)
-                        {
-                            interactableObject.RemoveOutline();
-                            interactableObject = null;
-                            return;
-                        }
+                        interactableObject.AddOutline();
                     }
-
-                    interactableObject = hit.transform.GetComponent<InteractableObject>();
-                    interactableObject.AddOutline();
                 }
 
-                if (hit.transform.gameObject.tag == "Grabbable")
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (curGrabbedObj == null)
                 {
-                    if (curGrabbedObj != null)
+                    if (hit.transform.gameObject.tag == "Grabbable")
                     {
-                        curGrabbedObj = null;
+                        curGrabbedObj = hit.transform.GetComponent<GrabbableObject>();
+                        curGrabbedObj.grabbed = true;
                         return;
                     }
-
-                    curGrabbedObj = hit.transform.GetComponent<GrabbableObject>();
-                    curGrabbedObj.grabbed = true;
                 }
             }
         }
 
-        //If the player is holding an object, drop it
-        if (Input.GetButtonDown("Fire2") && !arMenu.activeSelf)
+        //If holding an object drop it
+        if (Input.GetKeyDown(KeyCode.E) && curGrabbedObj != null)
         {
-            if (curGrabbedObj != null)
-            {
-                curGrabbedObj.grabbed = false;
-            }
+            curGrabbedObj.grabbed = false;
+            curGrabbedObj = null;
         }
 
         //When an NPC and Object has been clicked on, the NPC will translate if they're a helpful NPC
-        if (Input.GetKeyDown(KeyCode.E) && curNPC != null && interactableObject != null)
+        if (Input.GetKeyDown(KeyCode.F) && curNPC != null && interactableObject != null)
         {     
             if (curNPC.GetComponent<NPCHelpful>())
             {
                 string _objectAlienWord;
-                if (languageDictionary.AlienEnglishDictionary.TryGetValue(interactableObject.ObjectName, out _objectAlienWord))
+                if (alienEnglishDictionaryManager.AlienEnglishDictionary.TryGetValue(interactableObject.ObjectName, out _objectAlienWord))
+                {
                     AddToGuide(_objectAlienWord, interactableObject.ObjectName);
+                }
+                //Used to catch any errors with inputting wrong names in the dictionary or ObjectName
                 else
-                    throw new Exception("English object name is wrong; not found in the LanguageDictionary."); //Used to catch any errors with inputting wrong names in the dictionary or ObjectName
+                    throw new Exception("English object name is wrong; not found in the LanguageDictionary. You should've listened to the first warning you dumbfuk."); 
 
                 curNPC.GetComponent<NPCHelpful>().textToDisplay = _objectAlienWord;
             }
@@ -128,9 +129,18 @@ public class PlayerInteraction : MonoBehaviour {
     //Adds new translated word to AR guide dictionary
     void AddToGuide(string _alienWord, string _englishWord)
     {
+        //Only adds to the guide if it isn't already in there
+        for(int i = 1; i < arMenuGrid.transform.childCount; i++)
+        {
+            if (arMenuGrid.transform.GetChild(i).transform.GetChild(0).gameObject.GetComponent<Text>().text == _englishWord)
+            {
+                return;
+            }
+        }
+
         GameObject prefab = Instantiate(arMenuDictRowPrefab, arMenuGrid.transform) as GameObject;
         prefab.transform.SetAsLastSibling();
-        prefab.transform.GetChild(0).gameObject.GetComponent<Text>().text = _alienWord;
-        prefab.transform.GetChild(1).gameObject.GetComponent<Text>().text = _englishWord;
+        prefab.transform.GetChild(0).gameObject.GetComponent<Text>().text = _englishWord;
+        prefab.transform.GetChild(1).gameObject.GetComponent<Text>().text = _alienWord;
     }
 }

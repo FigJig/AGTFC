@@ -25,12 +25,14 @@ public class GrabbableObject : MonoBehaviour {
             transform.SetParent(mainCam.transform);
             transform.localPosition = Vector3.MoveTowards(transform.localPosition, new Vector3(0f, -0.5f, 2f), 0.5f);
             transform.localRotation = Quaternion.Euler(new Vector3(0f, 0f, 0f));
+            transform.tag = "Grabbed";
         }
         else
         {
             rb.isKinematic = false;
             collider.isTrigger = false;
             transform.parent = null;
+            transform.tag = "Grabbable";
         }
 	}
 }

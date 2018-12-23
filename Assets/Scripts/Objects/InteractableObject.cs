@@ -5,14 +5,12 @@ using UnityEngine;
 public class InteractableObject : MonoBehaviour {
 
     public string ObjectName;
-    public bool HasBeenInteracted;
 
     private Renderer rend;
 
     void Start()
     {
         rend = GetComponent<Renderer>();
-        HasBeenInteracted = false;
     }
 
     public void Translated()
