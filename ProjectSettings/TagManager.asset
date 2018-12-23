@@ -8,6 +8,7 @@ TagManager:
   - Object
   - ScrollHandle
   - Grabbable
+  - Grabbed
   layers:
   - Default
   - TransparentFX
